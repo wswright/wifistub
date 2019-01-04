@@ -23,6 +23,8 @@ public class AccessPoint {
     public String essid;
     public String key;
 
+    public List<WirelessClient> clients = new ArrayList<>();
+
     public AccessPoint(String bssid, String privacy, String cipher, String authentication, String lanIP, String idLength, String essid, String key) {
         this.bssid = bssid.trim();
         this.privacy = privacy.trim();
@@ -35,6 +37,10 @@ public class AccessPoint {
 
         if(this.essid.isBlank())
             this.essid = "unprintable";
+    }
+
+    public int getClientCount() {
+        return clients.size();
     }
 
     public AccessPoint wFirstTimeSeen(String firstTimeSeen) {
@@ -78,11 +84,15 @@ public class AccessPoint {
         return String.format("airodump-ng -c %d --bssid %s -w %s %s", channel, bssid, essid.isBlank() ? "unprintable" : essid, Main.WIRELESS_DEVICE);
     }
 
-    public List<String> getAireplayCommands(List<WirelessClient> clients) {
-        List<String> commands = new ArrayList<>();
+    public void setWirelessClients(List<WirelessClient> clients) {
         List<WirelessClient> ownedClients = clients.stream().filter(o -> o.bssid.equalsIgnoreCase(bssid)).collect(Collectors.toList());
+        this.clients.addAll(ownedClients);
+    }
 
-        for(WirelessClient client : ownedClients) {
+    public List<String> getAireplayCommands() {
+        List<String> commands = new ArrayList<>();
+
+        for(WirelessClient client : clients) {
             commands.add(String.format("aireplay-ng -0 %d -a %s -c %s %s",Main.DEAUTH_COUNT, bssid, client.mac, Main.WIRELESS_DEVICE));
         }
         return commands;

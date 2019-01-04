@@ -24,13 +24,14 @@ public class Main {
             List<AccessPoint> accessPointsWithClients = wirelessClients.stream()
                     .map(o -> o.bssid)
                     .map(bssid -> apMap.get(bssid))
-                    .filter(x -> x!=null)
+                    .filter(x -> x != null)
                     .distinct()
                     .collect(Collectors.toList());
-            for(AccessPoint p : accessPointsWithClients) {
-                System.out.println(String.format("\n%s @ %ddb ]%s", p.essid, p.power, pad("=", 120-p.essid.length()-String.valueOf(p.power).length())));
-                System.out.println(String.format("\t%s",p.getAiroDumpCommand()));
-                System.out.println("\t" + combine(p.getAireplayCommands(wirelessClients)));
+            for (AccessPoint p : accessPointsWithClients) {
+                p.setWirelessClients(wirelessClients);
+                System.out.println(String.format("\n%s @ %ddb ]==[%d clients]%s", p.essid, p.power, p.getClientCount(), pad("=", 120 - p.essid.length() - String.valueOf(p.power).length() - String.valueOf(p.getClientCount()).length())));
+                System.out.println(String.format("\t%s", p.getAiroDumpCommand()));
+                System.out.println("\t" + combine(p.getAireplayCommands()));
             }
 
         } catch (Exception eX) {
@@ -41,14 +42,14 @@ public class Main {
 
     public static String pad(String with, int count) {
         StringBuilder sb = new StringBuilder(count);
-        for(int i=0 ; i<count; i++)
+        for (int i = 0; i < count; i++)
             sb.append(with);
         return sb.toString();
     }
 
     public static String combine(List<String> commands) {
         StringJoiner joiner = new StringJoiner(" && ");
-        for(String s : commands)
+        for (String s : commands)
             joiner.add(s);
         return joiner.toString();
     }
